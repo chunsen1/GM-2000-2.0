@@ -125,6 +125,7 @@ void setup() {
   initSDCard();
   initGPS();
 
+  readConfig(filename, true);
   updateCmdMenu(BUTTON_NONE);
 }
 

@@ -36,7 +36,8 @@ void updateCmdMenu(int8_t button) {
       break;
 
     case (MENU_CONF):
-      write (1, 0, "Config");
+      write ("Config");
+      overwrite(0, 1, filename);
       break;
   }
 }
@@ -79,4 +80,3 @@ void updateMenuPos2() {
   lcd.setCursor(5, 1);
   lcd.print(currentData.hdop);
 }
-

@@ -172,7 +172,7 @@ void createLogFile() {
   }
   File logFile = SD.open(filename, FILE_WRITE);
   if (logFile) {
-    logFile.println("lat, lng, date, time, tempBTS, tempAir");
+    logFile.println("#, lat, lng, date, time, tempBTS, tempAir");
     logFile.close();
   } else {
     write("Error creating logfile");
