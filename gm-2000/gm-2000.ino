@@ -69,6 +69,8 @@
 uint8_t cmdMenu = BUTTON_NONE;
 uint8_t cmdAction = BUTTON_NONE;
 uint8_t menuState = START_MENU_STATE;
+uint8_t button = BUTTON_NONE;
+uint8_t lastButton = BUTTON_NONE;
 boolean isDirtyTime = false;
 boolean isDirtyPos = false;
 boolean isDirtyPos2 = false;
@@ -138,22 +140,31 @@ void loop() {
 
   // finde heraus, was beim nächsten Durchlauf geschehen soll
   if (cmdAction == 0 && cmdMenu == 0 && menuState != MENU_FILE_EDIT) {
-    int8_t button = getButton();
+    button = getButton();
+    //    DEBUG_PRINT(F("A---button pressed: "));
+    //    DEBUG_PRINT(button);
+    //    DEBUG_PRINT(F("  lastButton: "));
+    //    DEBUG_PRINTLN(lastButton);
 
-    //    DEBUG_PRINT(F("button: "));
-    //    DEBUG_PRINTLN(button);
+    if (button != lastButton) {
+      //      DEBUG_PRINT(F("button: "));
+      //      DEBUG_PRINT(button);
+      //      DEBUG_PRINT(F("  lastButton: "));
+      //      DEBUG_PRINTLN(lastButton);
 
-    //Menü hoch und runter durchscrollen
-    if (button == BUTTON_UP || button == BUTTON_DOWN) {
-      cmdMenu = button;
+      lastButton = button;
 
-      //je nach menuState eine Aktion ausführen
-    } else if (button == BUTTON_LEFT || button == BUTTON_RIGHT) {
-      cmdAction = button;
+      //Menü hoch und runter durchscrollen
+      if (button == BUTTON_UP || button == BUTTON_DOWN) {
+        cmdMenu = button;
+
+        //je nach menuState eine Aktion ausführen
+      } else if (button == BUTTON_LEFT || button == BUTTON_RIGHT) {
+        cmdAction = button;
+      }
+      //return;
     }
-    //return;
   }
-
 
 
   //Zustand bestimmen
@@ -188,12 +199,12 @@ void loop() {
     if (isDirtyTemp) {
       //Display aktualisieren
       updateMenuTemp();
-      DEBUG_PRINTLN(F("Display Temp"));
+      //DEBUG_PRINTLN(F("Display Temp"));
       isDirtyTemp = false;
     } else {
       // Daten holen
       if (currentMillis - previousMillisTemp > UPDATE_INTERVAL) {
-        DEBUG_PRINTLN(F("Update Temp"));
+        //DEBUG_PRINTLN(F("Update Temp"));
         previousMillisTemp = currentMillis;
         getTemperature(&currentData);
         isDirtyTemp = true;
@@ -203,14 +214,14 @@ void loop() {
   if (menuState == MENU_TIME) {
     if (isDirtyTime) {
       //Display aktualisieren
-      DEBUG_PRINTLN(F("Display TIME"));
+      //DEBUG_PRINTLN(F("Display TIME"));
       updateMenuTime();
       isDirtyTime = false;
     } else {
       // Daten holen
 
       if (currentMillis - previousMillisGPSTime > UPDATE_INTERVAL && gps.time.isValid() && gps.time.isUpdated() && gps.date.isValid() && gps.date.isUpdated()) {
-        DEBUG_PRINTLN(F("Update TIME"));
+        //DEBUG_PRINTLN(F("Update TIME"));
         previousMillisGPSTime = currentMillis;
         getGPSTime(&currentData);
         isDirtyTime = true;
@@ -220,14 +231,14 @@ void loop() {
   if (menuState == MENU_POSITION) {
     if (isDirtyPos) {
       //Display aktualisieren
-      DEBUG_PRINTLN(F("Display Pos"));
+      //DEBUG_PRINTLN(F("Display Pos"));
       updateMenuPos();
       isDirtyPos = false;
     } else {
       // Daten holen
 
       if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL && gps.location.isValid() && gps.location.isUpdated()) {
-        DEBUG_PRINTLN(F("Update Pos"));
+        //DEBUG_PRINTLN(F("Update Pos"));
         previousMillisGPSPos = currentMillis;
         getGPSPosition(&currentData);
         isDirtyPos = true;
@@ -238,12 +249,12 @@ void loop() {
   if (menuState == MENU_POS2) {
     if (isDirtyPos2) {
       //Display aktualisieren
-      DEBUG_PRINTLN(F("Display Pos2"));
+      //DEBUG_PRINTLN(F("Display Pos2"));
       updateMenuPos2();
       isDirtyPos2 = false;
     } else {
       if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL && gps.location.isValid() && gps.location.isUpdated()) {
-        DEBUG_PRINTLN(F("Update Pos2"));
+        //DEBUG_PRINTLN(F("Update Pos2"));
         previousMillisGPSPos = currentMillis;
         getGPSPosition(&currentData);
         isDirtyPos2 = true;
