@@ -1,5 +1,4 @@
 #define PIN_CHIP_SELECT 4 //pin for accessing the sd
-#define MAX_LENGTH_FILENAME 8
 #define CONFIG_FILE "conf.txt" //config file to store the current logfile name
 
 
@@ -41,18 +40,18 @@ void storeMeasurement(struct data *currentData) {
     datafile.print(",");
     datafile.print(currentData->lng, 10);
     datafile.print(",");
-//    datafile.print(currentData->year);
-//    datafile.print("-");
-//    datafile.print(currentData->month);
-//    datafile.print("-");
-//    datafile.print(currentData->day);
-//    datafile.print(",");
-//    datafile.print(currentData->hoD);
-//    datafile.print(":");
-//    datafile.print(currentData->minD);
-//    datafile.print(":");
-//    datafile.print(currentData->secD);
-//    datafile.print(",");
+    //    datafile.print(currentData->year);
+    //    datafile.print("-");
+    //    datafile.print(currentData->month);
+    //    datafile.print("-");
+    //    datafile.print(currentData->day);
+    //    datafile.print(",");
+    //    datafile.print(currentData->hoD);
+    //    datafile.print(":");
+    //    datafile.print(currentData->minD);
+    //    datafile.print(":");
+    //    datafile.print(currentData->secD);
+    //    datafile.print(",");
     datafile.print(currentData->date);
     datafile.print(",");
     datafile.print(currentData->time);
