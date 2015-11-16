@@ -45,6 +45,7 @@
 #define MAX_LENGTH_FILENAME 9
 
 #define UPDATE_INTERVAL 1000
+#define DEBUG_STORE_TO_SD_INTERVAL 100000
 
 //device temperature sensor settings
 #define DHTPIN 2     // what pin we're connected to
@@ -137,7 +138,23 @@ void loop() {
 
   feedGPS();
 
+  /*
+    if (currentMillis - previousMillisStoreToSD > STORE_TO_SD_INTERVAL) {
+    previousMillisStoreToSD = currentMillis;
 
+    if (menuState == MENU_TEMPERATURE) {
+      getGPSPosition(&currentData);
+      getGPSTime(&currentData);
+    } else if (menuState == MENU_POSITION || menuState == MENU_POS2) {
+      getGPSTime(&currentData);
+      getTemperature(&currentData);
+    } else if (menuState == MENU_TIME) {
+      getGPSPosition(&currentData);
+      getTemperature(&currentData);
+    }
+    storeMeasurement(&currentData);
+  }
+  */
 
   // finde heraus, was beim nächsten Durchlauf geschehen soll
   if (cmdAction == 0 && cmdMenu == 0 && menuState != MENU_FILE_EDIT) {
