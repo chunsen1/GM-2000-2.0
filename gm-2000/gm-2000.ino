@@ -157,6 +157,7 @@ void loop() {
   */
 
   // finde heraus, was beim nächsten Durchlauf geschehen soll
+  //----------------------------------------------------------------------------------------------
   if (cmdAction == 0 && cmdMenu == 0 && menuState != MENU_FILE_EDIT) {
     button = getButton();
     //    DEBUG_PRINT(F("A---button pressed: "));
@@ -186,6 +187,7 @@ void loop() {
 
 
   //Zustand bestimmen
+  //----------------------------------------------------------------------------------------------
   if (cmdMenu > 0 && menuState != MENU_FILE_EDIT) {
     updateCmdMenu(cmdMenu);
     cmdMenu = 0;
@@ -197,6 +199,7 @@ void loop() {
   }
 
   //Aktion
+  //----------------------------------------------------------------------------------------------
   if (menuState < MENU_CONF && cmdAction > 0) {
     //Messwert auf SD schreiben
     DEBUG_PRINTLN(F("Messwert auf SD speichern"));
@@ -205,6 +208,11 @@ void loop() {
       getGPSPosition(&currentData);
       getGPSTime(&currentData);
     } else if (menuState < MENU_CONF) {
+    } else if (menuState == MENU_POSITION || menuState == MENU_POS2) {
+      getGPSTime(&currentData);
+      getTemperature(&currentData);
+    } else if (menuState == MENU_TIME) {
+      getGPSPosition(&currentData);
       getTemperature(&currentData);
     }
     storeMeasurement(&currentData);
@@ -213,6 +221,7 @@ void loop() {
   }
 
   //Zustände abarbeiten
+  //----------------------------------------------------------------------------------------------
   if (menuState == MENU_TEMPERATURE) {
     if (isDirtyTemp) {
       //Display aktualisieren
@@ -282,7 +291,10 @@ void loop() {
     }
   }
 
-  //Dateiname
+
+
+  //Dateiname erstellen
+  //----------------------------------------------------------------------------------------------
   if (menuState == MENU_FILE_EDIT) {
     //Buchstabeneingabe
 
