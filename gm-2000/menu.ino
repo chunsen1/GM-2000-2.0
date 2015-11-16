@@ -1,4 +1,7 @@
 
+/*
+ * Aktualisiert den menuState und zeichnet den statischen Inhalt des Menüs neu.
+ */
 void updateCmdMenu(int8_t button) {
 
   if (button == BUTTON_UP) {
@@ -80,3 +83,11 @@ void updateMenuPos2() {
   lcd.setCursor(5, 1);
   lcd.print(currentData.hdop);
 }
+
+void updateMenuFileEdit() {
+  uint8_t offset = pos / 16;
+  write(&newFilename[offset * 16]);
+  lcd.setCursor(pos % 16, 0);
+  lcd.cursor();
+}
+

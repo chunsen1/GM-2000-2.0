@@ -84,7 +84,8 @@ long previousMillisTemp = 0; //used in main loop for delay
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 SdFat SD;
-uint8_t filePos = 0;
+uint8_t pos = 0;
+char newFilename[16] = "";
 char filename[16] = "";
 
 TinyGPSPlus gps;
@@ -138,6 +139,8 @@ void loop() {
 
   feedGPS();
 
+  //DEBUG_PRINT(F("menuState: "));
+  //DEBUG_PRINTLN(menuState);
   /*
     if (currentMillis - previousMillisStoreToSD > STORE_TO_SD_INTERVAL) {
     previousMillisStoreToSD = currentMillis;
@@ -158,7 +161,7 @@ void loop() {
 
   // finde heraus, was beim nächsten Durchlauf geschehen soll
   //----------------------------------------------------------------------------------------------
-  if (cmdAction == 0 && cmdMenu == 0 && menuState != MENU_FILE_EDIT) {
+  if (cmdAction == 0 && cmdMenu == 0 ) { //&& menuState != MENU_FILE_EDIT) {
     button = getButton();
     //    DEBUG_PRINT(F("A---button pressed: "));
     //    DEBUG_PRINT(button);
@@ -207,7 +210,6 @@ void loop() {
     if (menuState == MENU_TEMPERATURE) {
       getGPSPosition(&currentData);
       getGPSTime(&currentData);
-    } else if (menuState < MENU_CONF) {
     } else if (menuState == MENU_POSITION || menuState == MENU_POS2) {
       getGPSTime(&currentData);
       getTemperature(&currentData);
@@ -216,6 +218,22 @@ void loop() {
       getTemperature(&currentData);
     }
     storeMeasurement(&currentData);
+    cmdMenu = 0;
+    cmdAction = 0;
+    return;
+  }
+
+  if (menuState == MENU_CONF && cmdAction == BUTTON_RIGHT) {
+    //Neuen Messreihennamen erfassen
+    DEBUG_PRINTLN(F("Neuer Messreihenname"));
+    menuState = MENU_FILE_EDIT;
+    pos = 0;
+    for (int i = 0; i < 16; i++) {
+      newFilename[i] = ' ';
+    }
+    lcd.clear();
+    lcd.cursor();
+    cmdMenu = 0;
     cmdAction = 0;
     return;
   }
@@ -237,7 +255,9 @@ void loop() {
         isDirtyTemp = true;
       }
     }
+    return;
   }
+
   if (menuState == MENU_TIME) {
     if (isDirtyTime) {
       //Display aktualisieren
@@ -254,7 +274,9 @@ void loop() {
         isDirtyTime = true;
       }
     }
+    return;
   }
+
   if (menuState == MENU_POSITION) {
     if (isDirtyPos) {
       //Display aktualisieren
@@ -271,6 +293,7 @@ void loop() {
         isDirtyPos = true;
       }
     }
+    return;
   }
 
   if (menuState == MENU_POS2) {
@@ -285,20 +308,102 @@ void loop() {
         previousMillisGPSPos = currentMillis;
         getGPSPosition(&currentData);
         isDirtyPos2 = true;
-
-
       }
     }
+    return;
   }
 
 
 
   //Dateiname erstellen
   //----------------------------------------------------------------------------------------------
-  if (menuState == MENU_FILE_EDIT) {
-    //Buchstabeneingabe
+  if (menuState == MENU_FILE_EDIT && cmdMenu > 0 ) {
+    if (newFilename[pos] == 0) newFilename[pos] = ' ';
 
+    if (cmdMenu == BUTTON_UP) {
+      newFilename[pos]++;
+      switch (newFilename[pos]) {
+        case ' '+1:
+          newFilename[pos] = 'a';
+          break;
+        case '9'+1:
+          newFilename[pos] = ' ';
+          break;
+        case 'z'+1:
+          newFilename[pos] = 'A';
+          break;
+        case 'Z'+1:
+          newFilename[pos] = '0';
+          break;
+        default:
+          break;
+      }
+    } else if (cmdMenu == BUTTON_DOWN) {
+      newFilename[pos]--;
+      switch (newFilename[pos]) {
+        case ' '-1:
+          newFilename[pos] = '9';
+          break;
+        case '0'-1:
+          newFilename[pos] = 'Z';
+          break;
+        case 'a'-1:
+          newFilename[pos] = ' ';
+          break;
+        case 'A'-1:
+          newFilename[pos] = 'z';
+          break;
+        default:
+          break;
+      }
+    }
+    updateMenuFileEdit();
+    cmdMenu = 0;
+    cmdAction = 0;
     return;
   }
+
+  if (menuState == MENU_FILE_EDIT && cmdAction > 0) {
+
+    if (newFilename[pos] == 0) newFilename[pos] = ' ';
+
+    if (cmdAction == BUTTON_RIGHT) {
+      //DEBUG_PRINTLN(F("menuState == BUTTON_RIGHT"));
+      if (pos < MAX_LENGTH_FILENAME - 2) {
+        pos++;
+        updateMenuFileEdit();
+      } else {
+        //end of line reached --> Wert speichern und zurück ins Hauptmenü
+        uint8_t length;
+        for (length = MAX_LENGTH_FILENAME - 1; length > 0; length--) {
+          if (newFilename[length - 1] == ' ') newFilename[length - 1] = 0;
+          else break;
+        }
+        menuState = MENU_CONF;
+        writeConfig(newFilename);
+        for (int i = 0; i < 16; i++) {
+          filename[i] = newFilename[i];
+        }
+        updateCmdMenu(cmdMenu);
+        lcd.noCursor();
+      }
+    } else if (cmdAction == BUTTON_LEFT) {
+      if (pos > 0) {
+        pos--;
+        updateMenuFileEdit();
+      } else {
+        //Zeiger ist ganz links --> Eingabe verwerfen und zurück ins Hauptmenü
+        menuState = MENU_CONF;
+        memset(&newFilename[0], 0, sizeof(newFilename));
+        lcd.noCursor();
+        updateCmdMenu(cmdMenu);
+      }
+    }
+
+    cmdMenu = 0;
+    cmdAction = 0;
+  }
+
+
 
 }
