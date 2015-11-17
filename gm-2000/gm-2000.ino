@@ -76,6 +76,7 @@ boolean isDirtyTime = false;
 boolean isDirtyPos = false;
 boolean isDirtyPos2 = false;
 boolean isDirtyTemp = false;
+boolean isDirtyFileEdit = false;
 
 long previousMillisGPSTime = 0; //used in main loop for delay
 long previousMillisGPSPos = 0; //used in main loop for delay
@@ -191,7 +192,7 @@ void loop() {
 
   //Zustand bestimmen
   //----------------------------------------------------------------------------------------------
-  if (cmdMenu > 0 && menuState != MENU_FILE_EDIT) {
+  if (menuState != MENU_FILE_EDIT && cmdMenu > 0) {
     updateCmdMenu(cmdMenu);
     cmdMenu = 0;
     cmdAction = 0;
@@ -357,21 +358,19 @@ void loop() {
           break;
       }
     }
-    updateMenuFileEdit();
+    isDirtyFileEdit = true;
     cmdMenu = 0;
     cmdAction = 0;
     return;
   }
 
   if (menuState == MENU_FILE_EDIT && cmdAction > 0) {
-
     if (newFilename[pos] == 0) newFilename[pos] = ' ';
-
     if (cmdAction == BUTTON_RIGHT) {
       //DEBUG_PRINTLN(F("menuState == BUTTON_RIGHT"));
       if (pos < MAX_LENGTH_FILENAME - 2) {
         pos++;
-        updateMenuFileEdit();
+        isDirtyFileEdit = true;
       } else {
         //end of line reached --> Wert speichern und zurück ins Hauptmenü
         uint8_t length;
@@ -390,7 +389,7 @@ void loop() {
     } else if (cmdAction == BUTTON_LEFT) {
       if (pos > 0) {
         pos--;
-        updateMenuFileEdit();
+        isDirtyFileEdit = true;
       } else {
         //Zeiger ist ganz links --> Eingabe verwerfen und zurück ins Hauptmenü
         menuState = MENU_CONF;
@@ -399,11 +398,16 @@ void loop() {
         updateCmdMenu(cmdMenu);
       }
     }
-
     cmdMenu = 0;
     cmdAction = 0;
   }
 
-
+  //Display FileEdit aktualisieren
+  if (menuState == MENU_FILE_EDIT && cmdMenu == 0 ) {
+    if (isDirtyFileEdit) {
+      updateMenuFileEdit();
+      isDirtyFileEdit = false;
+    }
+  }
 
 }
