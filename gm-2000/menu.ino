@@ -51,10 +51,20 @@ void updateCmdMenu(int8_t button) {
  * updates the displayed values only
  */
 void updateMenuTime() {
+
+  char date[11];
+  char time[9];
+  sprintf(date, "%02d.%02d.%4d",
+          fix_data.dateTime.date, fix_data.dateTime.month, fix_data.dateTime.full_year(fix_data.dateTime.year));
+
+
+  sprintf(time, "%02d:%02d:%02d",
+          fix_data.dateTime.hours, fix_data.dateTime.minutes, fix_data.dateTime.seconds);
+  
   clearline(5, 0);
-  overwrite(5, 0, currentData.date);
+  overwrite(5, 0, date);
   clearline(5, 1);
-  overwrite(5, 1, currentData.time);
+  overwrite(5, 1, time);
 }
 
 void updateMenuTemp() {
@@ -69,19 +79,19 @@ void updateMenuTemp() {
 void updateMenuPos() {
   clearline(4, 0);
   lcd.setCursor(4, 0);
-  lcd.print(currentData.lat, 7);
+  lcd.print(fix_data.latitude(), 7);
   clearline(4, 1);
   lcd.setCursor(4, 1);
-  lcd.print(currentData.lng, 7);
+  lcd.print(fix_data.longitude(), 7);
 }
 
 void updateMenuPos2() {
   clearline(5, 0);
   lcd.setCursor(5, 0);
-  lcd.print(currentData.numberSatellites);
+  lcd.print(fix_data.satellites);
   clearline(5, 1);
   lcd.setCursor(5, 1);
-  lcd.print(currentData.hdop);
+  lcd.print((int)fix_data.hdop * 0.001);
 }
 
 void updateMenuFileEdit() {

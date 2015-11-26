@@ -7,9 +7,10 @@
 #include <DallasTemperature.h>
 #include "DHT.h"
 #include <TinyGPS++.h>
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 
-
+#include "NMEAGPS.h"
+#include <NeoSWSerial.h>
 
 #define DEBUG
 #ifdef DEBUG
@@ -59,13 +60,24 @@
 
 //gps settings
 //this pin will output the DTR signal
-#define GPS_RXPIN 15 //tx on gps
-#define GPS_TXPIN 16
+//#define GPS_RXPIN 15 //tx on gps
+//#define GPS_TXPIN 16
 
+#define RX_PIN 15
+// Arduino TX pin number that is connected to the GPS RX pin
+#define TX_PIN 16
 
 //----------------------------------------------------------------------------------------------
 // Variablen
 //----------------------------------------------------------------------------------------------
+
+NeoSWSerial gps_port( RX_PIN, TX_PIN );
+// This object parses received characters
+//   into the gps.fix() data structure
+static NMEAGPS  gps;
+
+static gps_fix  fix_data;
+//static const NMEAGPS::nmea_msg_t LAST_SENTENCE_IN_INTERVAL = NMEAGPS::NMEA_GLL;
 
 uint8_t cmdMenu = BUTTON_NONE;
 uint8_t cmdAction = BUTTON_NONE;
@@ -91,25 +103,25 @@ uint8_t pos = 0;
 char newFilename[16] = "";
 char filename[16] = "";
 
-TinyGPSPlus gps;
-SoftwareSerial softwareSerial(GPS_RXPIN, GPS_TXPIN);
+//TinyGPSPlus gps;
+//SoftwareSerial softwareSerial(GPS_RXPIN, GPS_TXPIN);
 
 // arrays to hold device addresses
 DeviceAddress outsideThermometer;
 
 struct data {
-  char date[11];
-  char time[9];
-  int year;
-  byte month;
-  byte day;
-  byte hoD;
-  byte minD;
-  byte secD;
-  float lat;
-  float lng;
-  byte numberSatellites;
-  long hdop;
+//  char date[11];
+//  char time[9];
+//  int year;
+//  byte month;
+//  byte day;
+//  byte hoD;
+//  byte minD;
+//  byte secD;
+//  float lat;
+//  float lng;
+//  byte numberSatellites;
+//  long hdop;
   float tempBTS;
   float tempAir;
 };
@@ -211,13 +223,13 @@ void loop() {
     DEBUG_PRINTLN(F("Messwert auf SD speichern"));
     //Messwerte der anderen Bereiche vor dem Speichern nochmal aktualisieren
     if (menuState == MENU_TEMPERATURE) {
-      getGPSPosition(&currentData);
-      getGPSTime(&currentData);
+//      getGPSPosition(&currentData);
+//      getGPSTime(&currentData);
     } else if (menuState == MENU_POSITION || menuState == MENU_POS2) {
-      getGPSTime(&currentData);
+//      getGPSTime(&currentData);
       getTemperature(&currentData);
     } else if (menuState == MENU_TIME) {
-      getGPSPosition(&currentData);
+//      getGPSPosition(&currentData);
       getTemperature(&currentData);
     }
     storeMeasurement(&currentData);
@@ -270,10 +282,10 @@ void loop() {
     } else {
       // Daten holen
 
-      if (currentMillis - previousMillisGPSTime > UPDATE_INTERVAL && gps.time.isValid() && gps.time.isUpdated() && gps.date.isValid() && gps.date.isUpdated()) {
+      if (currentMillis - previousMillisGPSTime > UPDATE_INTERVAL){// && gps.time.isValid() && gps.time.isUpdated() && gps.date.isValid() && gps.date.isUpdated()) {
         //DEBUG_PRINTLN(F("Update TIME"));
         previousMillisGPSTime = currentMillis;
-        getGPSTime(&currentData);
+//        getGPSTime(&currentData);
         isDirtyTime = true;
       }
     }
@@ -289,10 +301,10 @@ void loop() {
     } else {
       // Daten holen
 
-      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL && gps.location.isValid() && gps.location.isUpdated()) {
+      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL){// && gps.location.isValid() && gps.location.isUpdated()) {
         //DEBUG_PRINTLN(F("Update Pos"));
         previousMillisGPSPos = currentMillis;
-        getGPSPosition(&currentData);
+//        getGPSPosition(&currentData);
         isDirtyPos = true;
       }
     }
@@ -306,10 +318,10 @@ void loop() {
       updateMenuPos2();
       isDirtyPos2 = false;
     } else {
-      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL && gps.location.isValid() && gps.location.isUpdated()) {
+      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL){// && gps.location.isValid() && gps.location.isUpdated()) {
         //DEBUG_PRINTLN(F("Update Pos2"));
         previousMillisGPSPos = currentMillis;
-        getGPSPosition(&currentData);
+//        getGPSPosition(&currentData);
         isDirtyPos2 = true;
       }
     }
@@ -402,6 +414,7 @@ void loop() {
     }
     cmdMenu = 0;
     cmdAction = 0;
+    return;
   }
 
   //Display FileEdit aktualisieren
