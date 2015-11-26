@@ -1,7 +1,3 @@
-unsigned long buttonPressTime = 0;
-
-
-
 /*
  * returns the code of the pressed button
  * BUTTON_NONE if no button is pressed

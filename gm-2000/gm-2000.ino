@@ -72,6 +72,8 @@ uint8_t cmdAction = BUTTON_NONE;
 uint8_t menuState = START_MENU_STATE;
 uint8_t button = BUTTON_NONE;
 uint8_t lastButton = BUTTON_NONE;
+//isDirty bestimmt, ob das Display neu gezeichnet werden muss
+//true->Display neu zeichnen; false->Daten neu holen + true setzen
 boolean isDirtyTime = false;
 boolean isDirtyPos = false;
 boolean isDirtyPos2 = false;
