@@ -24,7 +24,7 @@
 
 #define DEBUG_STORE_TO_SD
 #ifdef DEBUG_STORE_TO_SD
-#define DEBUG_STORE_TO_SD_INTERVAL 100000
+#define DEBUG_STORE_TO_SD_INTERVAL 10000
 #endif
 
 #define BUTTON_NONE   0
@@ -354,7 +354,7 @@ void loop() {
           else break;
         }
         menuState = MENU_CONF;
-        writeConfig(newFilename);
+        writeConfig(newFilename, true);
         for (int i = 0; i < 16; i++) {
           filename[i] = newFilename[i];
         }

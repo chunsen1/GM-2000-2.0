@@ -31,9 +31,10 @@ void initSDCard() {
  * store measurement to SD
  */
 void storeMeasurement(struct temperature *currentData) {
-  char filename[14] = "";
-  readConfig(filename, true);
+  //char filename[16] = "";
+  //readConfig(filename, true);
   createLogFile(); //writes headers if file does not exist
+  DEBUG_PRINTLN(filename);
   File datafile = SD.open(filename, FILE_WRITE);
   // if the file is available, write to it:
   if (datafile) {
@@ -81,7 +82,7 @@ void storeMeasurement(struct temperature *currentData) {
 
   write("measurement", "stored to SD");
   //TODO: get rid of delay
-  delay(1000);
+  delay(750);
   updateCmdMenu(BUTTON_NONE);
 }
 
@@ -93,12 +94,17 @@ void readConfig(char* filename, bool extension) {
   uint8_t pos = 0;
   char character;
   File configFile = SD.open(CONFIG_FILE);
+
+  String settingValue;
+
   if (configFile) {
     while (configFile.available()) {
       character = configFile.read();
       //while( configFile.available() && (character != '[')){
       //  character = configFile.read();
       //}
+
+      // read the current filename
       while (configFile.available() && (character != '=')) { //&& pos < 14) {
         character = configFile.read();
       }
@@ -109,6 +115,20 @@ void readConfig(char* filename, bool extension) {
         //settingValue = settingValue + character;
         character = configFile.read();
       }
+
+      //read the current # of measurement
+      while (configFile.available() && (character != '=')) { //&& pos < 14) {
+        character = configFile.read();
+      }
+      character = configFile.read(); // leave out the '='
+      while ((configFile.available()) && (character != ']')) {
+        settingValue = settingValue + character;
+        character = configFile.read();
+      }
+      if (character == ']') {
+        counter = toLong(settingValue);
+      }
+
       //Debugging Printing
       // write("Current config", buffer);
     }
@@ -147,11 +167,19 @@ void readConfig(char* filename, bool extension) {
   }
 }
 
+long toLong(String settingValue) {
+  char longbuf[settingValue.length() + 1];
+  settingValue.toCharArray(longbuf, sizeof(longbuf));
+  long l = atol(longbuf);
+  return l;
+}
+
 /*
  * writes the current logfilename to the config file
- * filename=[value.txt]
+ * filename=[value.txt] \n counter=[n]
  */
-void writeConfig(char* filename) {
+void writeConfig(char* filename, boolean newCounter) {
+  if(newCounter) counter = 1;
   // Delete the old One
   SD.remove(CONFIG_FILE);
   // Create new one
@@ -159,6 +187,10 @@ void writeConfig(char* filename) {
   logFile.print("[");
   logFile.print("filename=");
   logFile.print(filename);
+  logFile.println("]");
+  logFile.print("[");
+  logFile.print("counter=");
+  logFile.print(counter);
   logFile.println("]");
   // close the file:
   logFile.close();
@@ -170,8 +202,8 @@ void writeConfig(char* filename) {
  *creates logfile with file header
  */
 void createLogFile() {
-  char filename[14] = "";
-  readConfig(filename, true);
+//  char filename[16] = "";
+//  readConfig(filename, true);
   if (SD.exists(filename)) { //if file already exists, skip writing header
     return;
   }
