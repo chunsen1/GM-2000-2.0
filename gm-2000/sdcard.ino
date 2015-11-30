@@ -29,37 +29,35 @@ void initSDCard() {
 /*
  * store measurement to SD
  */
-void storeMeasurement(struct data *currentData) {
+void storeMeasurement(struct temperature *currentData) {
   char filename[14] = "";
   readConfig(filename, true);
   createLogFile(); //writes headers if file does not exist
   File datafile = SD.open(filename, FILE_WRITE);
   // if the file is available, write to it:
   if (datafile) {
-    datafile.print(currentData->lat, 10);
+    datafile.print(fix_data.latitude(), 10);
     datafile.print(",");
-    datafile.print(currentData->lng, 10);
+    datafile.print(fix_data.longitude(), 10);
     datafile.print(",");
-    //    datafile.print(currentData->year);
-    //    datafile.print("-");
-    //    datafile.print(currentData->month);
-    //    datafile.print("-");
-    //    datafile.print(currentData->day);
-    //    datafile.print(",");
-    //    datafile.print(currentData->hoD);
-    //    datafile.print(":");
-    //    datafile.print(currentData->minD);
-    //    datafile.print(":");
-    //    datafile.print(currentData->secD);
-    //    datafile.print(",");
-    datafile.print(currentData->date);
+
+    datafile.print(fix_data.dateTime.full_year(fix_data.dateTime.year));
+    datafile.print('-');
+    if (fix_data.dateTime.month < 10) datafile.print('0');
+    datafile.print(fix_data.dateTime.month) ;
+    datafile.print('-');
+    if (fix_data.dateTime.date < 10) datafile.print('0');
+    datafile.print(fix_data.dateTime.date);
     datafile.print(",");
-    datafile.print(currentData->time);
-    datafile.print(",");
-    datafile.print(currentData->tempBTS, 10);
-    datafile.print(",");
-    datafile.print(currentData->tempAir, 10);
-    datafile.println("");
+
+    if (fix_data.dateTime.hours < 10) datafile.print('0');
+    datafile.print(fix_data.dateTime.hours);
+    datafile.print(':');
+    if (fix_data.dateTime.minutes < 10) datafile.print('0');
+    datafile.print(fix_data.dateTime.minutes);
+    datafile.print(':');
+    if (fix_data.dateTime.seconds < 10) datafile.print('0');
+    datafile.println(fix_data.dateTime.seconds);
 
     // dataFile.println(position);
     datafile.close();
