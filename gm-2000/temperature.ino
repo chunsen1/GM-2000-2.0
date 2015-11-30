@@ -11,7 +11,7 @@ void initTemperature() {
   //  sensors.setResolution(addressTempAir, TEMPERATURE_PRECISION);
 }
 
-void getTemperature(struct data *temperature) {
+void getTemperature(struct temperature *temperature) {
   // Setup a oneWire instance to communicate with any OneWire devices
   OneWire oneWire(ONE_WIRE_BUS);
   // Pass our oneWire reference to Dallas Temperature.

@@ -7,13 +7,13 @@ void updateCmdMenu(int8_t button) {
   if (button == BUTTON_UP) {
     if (menuState > MENU_MIN) {
       menuState--;
-      DEBUG_PRINTLN(F("button UP"));
+      //DEBUG_PRINTLN(F("button UP"));
     } else menuState = MENU_MAX;
   }
   else if (button == BUTTON_DOWN) {
     if (menuState < MENU_MAX) {
       menuState++;
-      DEBUG_PRINTLN(F("button DOWN"));
+      //DEBUG_PRINTLN(F("button DOWN"));
     } else menuState = MENU_MIN;
   }
 

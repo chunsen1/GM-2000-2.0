@@ -29,7 +29,7 @@ void initSDCard() {
 /*
  * store measurement to SD
  */
-void storeMeasurement(struct data *currentData) {
+void storeMeasurement(struct temperature *currentData) {
   char filename[14] = "";
   readConfig(filename, true);
   createLogFile(); //writes headers if file does not exist
@@ -57,7 +57,7 @@ void storeMeasurement(struct data *currentData) {
     datafile.print(fix_data.dateTime.minutes);
     datafile.print(':');
     if (fix_data.dateTime.seconds < 10) datafile.print('0');
-    datafile.print(fix_data.dateTime.seconds);
+    datafile.println(fix_data.dateTime.seconds);
 
     // dataFile.println(position);
     datafile.close();

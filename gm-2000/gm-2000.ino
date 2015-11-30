@@ -6,8 +6,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "DHT.h"
-#include <TinyGPS++.h>
-//#include <SoftwareSerial.h>
 
 #include "NMEAGPS.h"
 #include <NeoSWSerial.h>
@@ -24,18 +22,21 @@
 #define DEBUG_PRINTLN(x)
 #endif
 
+#define DEBUG_STORE_TO_SD
+#ifdef DEBUG_STORE_TO_SD
+#define DEBUG_STORE_TO_SD_INTERVAL 100000
+#endif
+
 #define BUTTON_NONE   0
 #define BUTTON_UP    1
 #define BUTTON_DOWN   2
 #define BUTTON_RIGHT  3
 #define BUTTON_LEFT   4
-
 #define BUTTON_SELECT 2 //RIGHT == SELECT
 
 #define START_MENU_STATE 1
 #define MENU_MIN 1
 #define MENU_MAX 5
-
 #define MENU_TIME 1
 #define MENU_POSITION 2
 #define MENU_POS2 3
@@ -46,7 +47,8 @@
 #define MAX_LENGTH_FILENAME 9
 
 #define UPDATE_INTERVAL 1000
-#define DEBUG_STORE_TO_SD_INTERVAL 100000
+
+
 
 //device temperature sensor settings
 #define DHTPIN 2     // what pin we're connected to
@@ -59,25 +61,13 @@
 #define BUTTON_PRESS_TIME 100
 
 //gps settings
-//this pin will output the DTR signal
-//#define GPS_RXPIN 15 //tx on gps
-//#define GPS_TXPIN 16
-
-#define RX_PIN 15
+#define RX_PIN 15 //tx on gps
 // Arduino TX pin number that is connected to the GPS RX pin
 #define TX_PIN 16
 
 //----------------------------------------------------------------------------------------------
 // Variablen
 //----------------------------------------------------------------------------------------------
-
-NeoSWSerial gps_port( RX_PIN, TX_PIN );
-// This object parses received characters
-//   into the gps.fix() data structure
-static NMEAGPS  gps;
-
-static gps_fix  fix_data;
-//static const NMEAGPS::nmea_msg_t LAST_SENTENCE_IN_INTERVAL = NMEAGPS::NMEA_GLL;
 
 uint8_t cmdMenu = BUTTON_NONE;
 uint8_t cmdAction = BUTTON_NONE;
@@ -95,6 +85,9 @@ boolean isDirtyFileEdit = false;
 long previousMillisGPSTime = 0; //used in main loop for delay
 long previousMillisGPSPos = 0; //used in main loop for delay
 long previousMillisTemp = 0; //used in main loop for delay
+#ifdef DEBUG_STORE_TO_SD
+unsigned long previousMillisStoreToSD = 0;
+#endif
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
@@ -103,30 +96,17 @@ uint8_t pos = 0;
 char newFilename[16] = "";
 char filename[16] = "";
 
-//TinyGPSPlus gps;
-//SoftwareSerial softwareSerial(GPS_RXPIN, GPS_TXPIN);
+NeoSWSerial gps_port( RX_PIN, TX_PIN );
+// This object parses received characters into the gps.fix() data structure
+static NMEAGPS gps;
+static gps_fix fix_data;
 
-// arrays to hold device addresses
-DeviceAddress outsideThermometer;
-
-struct data {
-//  char date[11];
-//  char time[9];
-//  int year;
-//  byte month;
-//  byte day;
-//  byte hoD;
-//  byte minD;
-//  byte secD;
-//  float lat;
-//  float lng;
-//  byte numberSatellites;
-//  long hdop;
+struct temperature {
   float tempBTS;
   float tempAir;
 };
 
-data currentData;
+temperature currentData;
 
 
 
@@ -154,41 +134,23 @@ void loop() {
 
   feedGPS();
 
-  //DEBUG_PRINT(F("menuState: "));
-  //DEBUG_PRINTLN(menuState);
-  /*
-    if (currentMillis - previousMillisStoreToSD > STORE_TO_SD_INTERVAL) {
+#ifdef DEBUG_STORE_TO_SD
+  if (currentMillis - previousMillisStoreToSD > DEBUG_STORE_TO_SD_INTERVAL) {
     previousMillisStoreToSD = currentMillis;
 
-    if (menuState == MENU_TEMPERATURE) {
-      getGPSPosition(&currentData);
-      getGPSTime(&currentData);
-    } else if (menuState == MENU_POSITION || menuState == MENU_POS2) {
-      getGPSTime(&currentData);
-      getTemperature(&currentData);
-    } else if (menuState == MENU_TIME) {
-      getGPSPosition(&currentData);
+    if (menuState == MENU_POSITION || menuState == MENU_POS2 || menuState == MENU_TIME) {
       getTemperature(&currentData);
     }
     storeMeasurement(&currentData);
   }
-  */
+#endif
 
   // finde heraus, was beim nächsten Durchlauf geschehen soll
   //----------------------------------------------------------------------------------------------
-  if (cmdAction == 0 && cmdMenu == 0 ) { //&& menuState != MENU_FILE_EDIT) {
+  if (cmdAction == 0 && cmdMenu == 0 ) {
     button = getButton();
-    //    DEBUG_PRINT(F("A---button pressed: "));
-    //    DEBUG_PRINT(button);
-    //    DEBUG_PRINT(F("  lastButton: "));
-    //    DEBUG_PRINTLN(lastButton);
-
+    
     if (button != lastButton) {
-      //      DEBUG_PRINT(F("button: "));
-      //      DEBUG_PRINT(button);
-      //      DEBUG_PRINT(F("  lastButton: "));
-      //      DEBUG_PRINTLN(lastButton);
-
       lastButton = button;
 
       //Menü hoch und runter durchscrollen
@@ -199,7 +161,6 @@ void loop() {
       } else if (button == BUTTON_LEFT || button == BUTTON_RIGHT) {
         cmdAction = button;
       }
-      //return;
     }
   }
 
@@ -223,13 +184,13 @@ void loop() {
     DEBUG_PRINTLN(F("Messwert auf SD speichern"));
     //Messwerte der anderen Bereiche vor dem Speichern nochmal aktualisieren
     if (menuState == MENU_TEMPERATURE) {
-//      getGPSPosition(&currentData);
-//      getGPSTime(&currentData);
+      //      getGPSPosition(&currentData);
+      //      getGPSTime(&currentData);
     } else if (menuState == MENU_POSITION || menuState == MENU_POS2) {
-//      getGPSTime(&currentData);
+      //      getGPSTime(&currentData);
       getTemperature(&currentData);
     } else if (menuState == MENU_TIME) {
-//      getGPSPosition(&currentData);
+      //      getGPSPosition(&currentData);
       getTemperature(&currentData);
     }
     storeMeasurement(&currentData);
@@ -282,10 +243,10 @@ void loop() {
     } else {
       // Daten holen
 
-      if (currentMillis - previousMillisGPSTime > UPDATE_INTERVAL){// && gps.time.isValid() && gps.time.isUpdated() && gps.date.isValid() && gps.date.isUpdated()) {
+      if (currentMillis - previousMillisGPSTime > UPDATE_INTERVAL) { // && gps.time.isValid() && gps.time.isUpdated() && gps.date.isValid() && gps.date.isUpdated()) {
         //DEBUG_PRINTLN(F("Update TIME"));
         previousMillisGPSTime = currentMillis;
-//        getGPSTime(&currentData);
+        //        getGPSTime(&currentData);
         isDirtyTime = true;
       }
     }
@@ -301,10 +262,10 @@ void loop() {
     } else {
       // Daten holen
 
-      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL){// && gps.location.isValid() && gps.location.isUpdated()) {
+      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL) { // && gps.location.isValid() && gps.location.isUpdated()) {
         //DEBUG_PRINTLN(F("Update Pos"));
         previousMillisGPSPos = currentMillis;
-//        getGPSPosition(&currentData);
+        //        getGPSPosition(&currentData);
         isDirtyPos = true;
       }
     }
@@ -318,10 +279,10 @@ void loop() {
       updateMenuPos2();
       isDirtyPos2 = false;
     } else {
-      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL){// && gps.location.isValid() && gps.location.isUpdated()) {
+      if (currentMillis - previousMillisGPSPos > UPDATE_INTERVAL) { // && gps.location.isValid() && gps.location.isUpdated()) {
         //DEBUG_PRINTLN(F("Update Pos2"));
         previousMillisGPSPos = currentMillis;
-//        getGPSPosition(&currentData);
+        //        getGPSPosition(&currentData);
         isDirtyPos2 = true;
       }
     }
