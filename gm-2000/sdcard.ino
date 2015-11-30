@@ -60,7 +60,12 @@ void storeMeasurement(struct temperature *currentData) {
     datafile.print(fix_data.dateTime.minutes);
     datafile.print(':');
     if (fix_data.dateTime.seconds < 10) datafile.print('0');
-    datafile.println(fix_data.dateTime.seconds);
+    datafile.print(fix_data.dateTime.seconds);
+
+    datafile.print(",");
+    datafile.print(currentData.tempBTS, 5);
+    datafile.print(",");
+    datafile.println(currentData.tempAir, 5);
 
     // dataFile.println(position);
     datafile.close();
