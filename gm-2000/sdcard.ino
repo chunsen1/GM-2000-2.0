@@ -1,6 +1,7 @@
 #define PIN_CHIP_SELECT 4 //pin for accessing the sd
 #define CONFIG_FILE "conf.txt" //config file to store the current logfile name
 
+long counter = 0;
 
 /*
  * opens communication to sd card
@@ -36,6 +37,8 @@ void storeMeasurement(struct temperature *currentData) {
   File datafile = SD.open(filename, FILE_WRITE);
   // if the file is available, write to it:
   if (datafile) {
+    datafile.print(counter++);
+    datafile.print(",");
     datafile.print(fix_data.latitude(), 10);
     datafile.print(",");
     datafile.print(fix_data.longitude(), 10);
