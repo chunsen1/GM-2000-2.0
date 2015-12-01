@@ -64,9 +64,9 @@ void storeMeasurement(struct temperature *currentData) {
     datafile.print(fix_data.dateTime.seconds);
 
     datafile.print(",");
-    datafile.print(currentData.tempBTS, 5);
+    datafile.print(currentData->tempBTS, 5);
     datafile.print(",");
-    datafile.println(currentData.tempAir, 5);
+    datafile.println(currentData->tempAir, 5);
 
     // dataFile.println(position);
     datafile.close();
