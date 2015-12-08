@@ -368,6 +368,7 @@ void loop() {
       } else {
         //Zeiger ist ganz links --> Eingabe verwerfen und zurück ins Hauptmenü
         menuState = MENU_CONF;
+        //newfilename leeren
         memset(&newFilename[0], 0, sizeof(newFilename));
         lcd.noCursor();
         updateCmdMenu(cmdMenu);
