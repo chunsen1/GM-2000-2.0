@@ -31,8 +31,6 @@ void initSDCard() {
  * store measurement to SD
  */
 void storeMeasurement(struct temperature *currentData) {
-  //char filename[16] = "";
-  //readConfig(filename, true);
   createLogFile(); //writes headers if file does not exist
   DEBUG_PRINTLN(filename);
   File datafile = SD.open(filename, FILE_WRITE);
@@ -92,7 +90,7 @@ void storeMeasurement(struct temperature *currentData) {
 /*
  * reads the logfilename from the config file to filename
  */
-void readConfig(char* filename, bool extension) {
+void readConfig(char* filename) {
   uint8_t pos = 0;
   char character;
   File configFile = SD.open(CONFIG_FILE);
@@ -130,11 +128,6 @@ void readConfig(char* filename, bool extension) {
       if (character == ']') {
         counter = toLong(settingValue);
       }
-      DEBUG_PRINT(F("counter from log"));
-      DEBUG_PRINTLN(counter);
-
-      //Debugging Printing
-      // write("Current config", buffer);
     }
     // close the file:
     configFile.close();
@@ -146,27 +139,13 @@ void readConfig(char* filename, bool extension) {
       }
       else break;
     }
-
-    uint8_t lastLetter = 0;
-    for ( int i = 14; i > 0; i--) {
-      if (filename[i - 1] == 0) {
-        lastLetter = i - 1;
-      } else break;
-    }
-    if (extension) {
-      filename[lastLetter] = '.';
-      filename[lastLetter + 1] = 't';
-      filename[lastLetter + 2] = 'x';
-      filename[lastLetter + 3] = 't';
-    }
-    //DEBUG_PRINTLN(filename);
     return;
   }
   else {
     // if the file didn't open, print an error:
     write("Error read config");
     while (true);
-    //DEBUG_PRINTLN("Error opening configuration");
+    DEBUG_PRINTLN(F("Error opening configuration"));
     return;
   }
 }
@@ -183,7 +162,7 @@ long toLong(String settingValue) {
  * filename=[value.txt] \n counter=[n]
  */
 void writeConfig(char* filename, boolean newCounter) {
-  if(newCounter) counter = 1;
+  if (newCounter) counter = 1;
   // Delete the old One
   SD.remove(CONFIG_FILE);
   // Create new one
@@ -207,11 +186,25 @@ void writeConfig(char* filename, boolean newCounter) {
 }
 
 /*
+ * Adds the file extension ".txt" to the given string
+ */
+void addFileExtension(char* extFilename) {
+  uint8_t lastLetter = 0;
+  for ( int i = 14; i > 0; i--) {
+    if (extFilename[i - 1] == 0) {
+      lastLetter = i - 1;
+    } else break;
+  }
+  extFilename[lastLetter] = '.';
+  extFilename[lastLetter + 1] = 't';
+  extFilename[lastLetter + 2] = 'x';
+  extFilename[lastLetter + 3] = 't';
+}
+
+/*
  *creates logfile with file header
  */
 void createLogFile() {
-//  char filename[16] = "";
-//  readConfig(filename, true);
   if (SD.exists(filename)) { //if file already exists, skip writing header
     return;
   }

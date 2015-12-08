@@ -22,7 +22,7 @@
 #define DEBUG_PRINTLN(x)
 #endif
 
-#define DEBUG_STORE_TO_SD
+//#define DEBUG_STORE_TO_SD
 #ifdef DEBUG_STORE_TO_SD
 #define DEBUG_STORE_TO_SD_INTERVAL 5000
 #endif
@@ -44,7 +44,8 @@
 #define MENU_CONF 5
 #define MENU_FILE_EDIT 50
 
-#define MAX_LENGTH_FILENAME 9
+//8.3 format
+#define MAX_LENGTH_FILENAME 8
 
 #define UPDATE_INTERVAL 1000
 
@@ -122,7 +123,7 @@ void setup() {
   initSDCard();
   initGPS();
 
-  readConfig(filename, true);
+  readConfig(filename);
   updateCmdMenu(BUTTON_NONE);
 }
 
@@ -343,17 +344,21 @@ void loop() {
     if (newFilename[pos] == 0) newFilename[pos] = ' ';
     if (cmdAction == BUTTON_RIGHT) {
       //DEBUG_PRINTLN(F("menuState == BUTTON_RIGHT"));
-      if (pos < MAX_LENGTH_FILENAME - 2) {
+      if (pos < MAX_LENGTH_FILENAME - 1) {
         pos++;
         isDirtyFileEdit = true;
       } else {
         //end of line reached --> Wert speichern und zurück ins Hauptmenü
         uint8_t length;
-        for (length = MAX_LENGTH_FILENAME - 1; length > 0; length--) {
-          if (newFilename[length - 1] == ' ') newFilename[length - 1] = 0;
+        for (length = 14; length > 0; length--) {
+          if (newFilename[length - 1] == ' ') {
+            newFilename[length - 1] = 0;
+          }
           else break;
         }
+
         menuState = MENU_CONF;
+        addFileExtension(newFilename);
         writeConfig(newFilename, true);
         for (int i = 0; i < 16; i++) {
           filename[i] = newFilename[i];
