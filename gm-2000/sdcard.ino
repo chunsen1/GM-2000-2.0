@@ -71,6 +71,8 @@ void storeMeasurement(struct temperature *currentData) {
     // dataFile.println(position);
     datafile.close();
     //DEBUG_PRINTLN("Measurement done");
+    writeConfig(filename, false);
+    DEBUG_PRINTLN(F("write config to SD"));
   }
   // if the file isn't open, pop up an error:
   else {
@@ -128,6 +130,8 @@ void readConfig(char* filename, bool extension) {
       if (character == ']') {
         counter = toLong(settingValue);
       }
+      DEBUG_PRINT(F("counter from log"));
+      DEBUG_PRINTLN(counter);
 
       //Debugging Printing
       // write("Current config", buffer);
@@ -192,6 +196,10 @@ void writeConfig(char* filename, boolean newCounter) {
   logFile.print("counter=");
   logFile.print(counter);
   logFile.println("]");
+  DEBUG_PRINT(F("filename: "));
+  DEBUG_PRINTLN(filename);
+  DEBUG_PRINT(F("counter: "));
+  DEBUG_PRINTLN(counter);
   // close the file:
   logFile.close();
   //prepare new logfile
