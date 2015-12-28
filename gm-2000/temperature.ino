@@ -1,14 +1,18 @@
+#define TEMP_CALIBRATION 0.14848308
 
 // arrays to hold device addresses
+
+//schwarzer Temperatursensor
+//DeviceAddress addressTempBTS = {0x28, 0xFF, 0x19, 0x79, 0x62, 0x14, 0x03, 0x23};
+
 //Hendriks Sensoren
-DeviceAddress addressTempBTS = {0x28, 0xFF, 0x19, 0x79, 0x62, 0x14, 0x03, 0x23};
-// DeviceAddress addressTempBTS = {0x28, 0xFF, 0xDC, 0xFF, 0x03, 0x15, 0x03, 0xC9};
-// DeviceAddress addressTempAir = {0x28, 0xFF, 0x68, 0x5B, 0x63, 0x15, 0x03, 0x9B};
+DeviceAddress addressTempBTS = {0x28, 0xFF, 0xDC, 0xFF, 0x03, 0x15, 0x03, 0xC9};
+DeviceAddress addressTempAir = {0x28, 0xFF, 0x68, 0x5B, 0x63, 0x15, 0x03, 0x9B};
 
 void initTemperature() {
   // set the resolution of Sensor
   //sensors.setResolution(addressTempBTS, TEMPERATURE_PRECISION);
-  //  sensors.setResolution(addressTempAir, TEMPERATURE_PRECISION);
+  //sensors.setResolution(addressTempAir, TEMPERATURE_PRECISION);
 }
 
 void getTemperature(struct temperature *temperature) {
@@ -18,17 +22,19 @@ void getTemperature(struct temperature *temperature) {
   DallasTemperature sensors(&oneWire);
 
   sensors.requestTemperatures();
-  temperature->tempBTS = sensors.getTempCByIndex(0);
+  //temperature->tempBTS = sensors.getTempCByIndex(0);
   //temperature->tempBTS = 35;
 
-  //temperature->tempBTS = sensors.getTempC(addressTempBTS);
-  //DEBUG_PRINTDEC(temperature->tempBTS);
+  temperature->tempBTS = sensors.getTempC(addressTempBTS);
+  //Mittelwert aus Kalibrierungsmessung auf Messergebnis der BTS-Sonde addieren
+  temperature->tempBTS += TEMP_CALIBRATION;
+  DEBUG_PRINTDEC(temperature->tempBTS);
 
   // Initialize DHT sensor for normal 16mhz Arduino
-  DHT dht(DHTPIN, DHTTYPE);
-  temperature->tempAir = dht.readTemperature();
+  //  DHT dht(DHTPIN, DHTTYPE);
+  //  temperature->tempAir = dht.readTemperature();
   //temperature->tempAir = 34;//dht.readTemperature();
 
-  //temperature->tempAir = sensors.getTempC(addressTempAir);
-  //DEBUG_PRINTDEC(temperature->tempAir);
+  temperature->tempAir = sensors.getTempC(addressTempAir);
+  DEBUG_PRINTDEC(temperature->tempAir);
 }

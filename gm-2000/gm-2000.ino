@@ -1,16 +1,16 @@
 #include <LCD.h>
-//#include <LiquidCrystal_I2C.h>
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
+//#include <LiquidCrystal.h>
 #include <SdFat.h>
 #include <Wire.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include "DHT.h"
+//#include "DHT.h"
 
 #include "NMEAGPS.h"
 #include <NeoSWSerial.h>
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #define DEBUG_PRINT(x)     Serial.print (x)
 #define DEBUG_PRINTDEC(x)     Serial.print (x, DEC)
@@ -24,7 +24,7 @@
 
 //#define DEBUG_STORE_TO_SD
 #ifdef DEBUG_STORE_TO_SD
-#define DEBUG_STORE_TO_SD_INTERVAL 5000
+#define DEBUG_STORE_TO_SD_INTERVAL 10000
 #endif
 
 #define BUTTON_NONE   0
@@ -52,19 +52,19 @@
 
 
 //device temperature sensor settings
-#define DHTPIN 2     // what pin we're connected to
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
+//#define DHTPIN 2     // what pin we're connected to
+//#define DHTTYPE DHT22   // DHT 22  (AM2302)
 
 //temperature settings
-#define ONE_WIRE_BUS 17
+#define ONE_WIRE_BUS 2
 
 #define PIN_BUTTONS 0 //buttons are wired to PIN 0
 #define BUTTON_PRESS_TIME 100
 
 //gps settings
-#define RX_PIN 15 //tx on gps
+#define RX_PIN 16 //tx on gps
 // Arduino TX pin number that is connected to the GPS RX pin
-#define TX_PIN 16
+#define TX_PIN 15
 
 //----------------------------------------------------------------------------------------------
 // Variablen
@@ -90,7 +90,8 @@ long previousMillisTemp = 0; //used in main loop for delay
 unsigned long previousMillisStoreToSD = 0;
 #endif
 
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+//LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7); // 0x27 is the I2C bus address for an unmodified backpack
 
 SdFat SD;
 uint8_t pos = 0;
@@ -150,7 +151,7 @@ void loop() {
   //----------------------------------------------------------------------------------------------
   if (cmdAction == 0 && cmdMenu == 0 ) {
     button = getButton();
-    
+
     if (button != lastButton) {
       lastButton = button;
 
@@ -363,7 +364,7 @@ void loop() {
         for (int i = 0; i < 16; i++) {
           filename[i] = newFilename[i];
         }
-        updateCmdMenu(cmdMenu);
+        updateCmdMenu(BUTTON_NONE);
         lcd.noCursor();
       }
     } else if (cmdAction == BUTTON_LEFT) {
@@ -376,7 +377,7 @@ void loop() {
         //newfilename leeren
         memset(&newFilename[0], 0, sizeof(newFilename));
         lcd.noCursor();
-        updateCmdMenu(cmdMenu);
+        updateCmdMenu(BUTTON_NONE);
       }
     }
     cmdMenu = 0;
